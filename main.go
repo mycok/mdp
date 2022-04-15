@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"time"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -79,6 +80,8 @@ func run(filename string, w io.Writer, skipPreview bool) error {
 		return nil
 	}
 
+	defer os.Remove(outFName)
+
 	return preview(outFName)
 }
 
@@ -130,6 +133,13 @@ func preview(fileName string) error {
 	}
 
 	// Open the file using the default program.
-	return exec.Command(commandPath, commandParams...).Run()
+	err = exec.Command(commandPath, commandParams...).Run()
 
+	// Add a delay to give the browser time to open the file before returning
+	// from the function. Once the function returns, the calling function calls all
+	// pending defer statements which in this case deletes the mentioned preview file.
+	// TODO: replace the sleep delay functionality with signal or some better way.
+	time.Sleep(5 * time.Second)
+
+	return err
 }

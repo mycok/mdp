@@ -1,11 +1,11 @@
-# Example Markdown File
+# Markdown Preview Tool
 
-This is an example Markdown file to test the preview tool
+This tool loads and converts Markdown content into HTML.
 
 ## Features:
-	* Support for links [PragProg]("https://mdp.com")
+	* Support for links [markdown preview]("https://mdp.com")
 	* Support for other features
 
 ## How to install:
-	```	go get github.com/user/program
+	```	go get github.com/mycok/mdp
 	```
