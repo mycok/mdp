@@ -3,12 +3,12 @@ package main
 import (
 	"bytes"
 	"os"
-	"testing"
 	"strings"
+	"testing"
 )
 
 const (
-	inputFilePath = "./testdata/test1.md"
+	inputFilePath  = "./testdata/test1.md"
 	goldenFilePath = "./testdata/test1.md.html"
 )
 
@@ -37,7 +37,7 @@ func TestRun(t *testing.T) {
 	var mockStdOut bytes.Buffer
 
 	// Call the run method and write the file path on the provided buffer.
-	if err := run(inputFilePath, &mockStdOut); err != nil {
+	if err := run(inputFilePath, &mockStdOut, true); err != nil {
 		t.Fatal(err)
 	}
 

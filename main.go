@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"runtime"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -28,6 +30,7 @@ const (
 
 func main() {
 	filename := flag.String("file", "", "Markdown file to preview")
+	skipPreview := flag.Bool("s", false, "Skip auto file preview with the default browser")
 	flag.Parse()
 
 	if *filename == "" {
@@ -36,14 +39,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := run(*filename, os.Stdout); err != nil {
+	if err := run(*filename, os.Stdout, *skipPreview); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 
 		os.Exit(1)
 	}
 }
 
-func run(filename string, w io.Writer) error {
+func run(filename string, w io.Writer, skipPreview bool) error {
 	// Read all the data from the provided input file and check for potential read errors.
 	fileContent, err := os.ReadFile(filename)
 	if err != nil {
@@ -55,7 +58,7 @@ func run(filename string, w io.Writer) error {
 	// Create a permanent file in the current root dir with the generated path.
 	// outFName :=  fmt.Sprintf("%s.html", filepath.Base(filename))
 
-	// Create a temp file.
+	// Create a temp file in a temp dir based on the current os.
 	tempF, err := os.CreateTemp("", "mdp*.html")
 	if err != nil {
 		return err
@@ -68,7 +71,15 @@ func run(filename string, w io.Writer) error {
 	outFName := tempF.Name()
 	fmt.Fprintln(w, outFName)
 
-	return saveHTML(outFName, htmlData)
+	if err := saveHTML(outFName, htmlData); err != nil {
+		return err
+	}
+
+	if skipPreview {
+		return nil
+	}
+
+	return preview(outFName)
 }
 
 func parseContent(input []byte) []byte {
@@ -90,4 +101,35 @@ func parseContent(input []byte) []byte {
 func saveHTML(filename string, data []byte) error {
 	// Write the data contents to file.
 	return os.WriteFile(filename, data, 0644)
+}
+
+func preview(fileName string) error {
+	commandName := ""
+	commandParams := []string{}
+
+	// Define executable based on os.
+	switch runtime.GOOS {
+	case "linux":
+		commandName = "xdg-open"
+	case "windows":
+		commandName = "cmd.exe"
+		commandParams = []string{"/c", "start"}
+	case "darwin":
+		commandName = "open"
+	default:
+		return fmt.Errorf("Os not supported")
+	}
+
+	// Append filename to params slice.
+	commandParams = append(commandParams, fileName)
+
+	// Locate executable based on path.
+	commandPath, err := exec.LookPath(commandName)
+	if err != nil {
+		return err
+	}
+
+	// Open the file using the default program.
+	return exec.Command(commandPath, commandParams...).Run()
+
 }
