@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -52,7 +51,20 @@ func run(filename string) error {
 
 	htmlData := parseContent(fileContent)
 
-	outFName := fmt.Sprintf("%s.html", filepath.Base(filename))
+	// Create a permanent file in the current root dir with the generated path.
+	// outFName :=  fmt.Sprintf("%s.html", filepath.Base(filename))
+
+	// Create a temp file.
+	tempF, err := os.CreateTemp("", "mdp*.html")
+	if err != nil {
+		return err
+	}
+
+	if err := tempF.Close(); err != nil {
+		return err
+	}
+
+	outFName := tempF.Name()
 	fmt.Println(outFName)
 
 	return saveHTML(outFName, htmlData)
