@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"os"
 	"testing"
+	"strings"
 )
 
 const (
 	inputFilePath = "./testdata/test1.md"
 	goldenFilePath = "./testdata/test1.md.html"
-	resultFile = "test1.md.html"
 )
 
 func TestParseContent(t *testing.T) {
@@ -34,10 +34,15 @@ func TestParseContent(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	if err := run(inputFilePath); err != nil {
+	var mockStdOut bytes.Buffer
+
+	// Call the run method and write the file path on the provided buffer.
+	if err := run(inputFilePath, &mockStdOut); err != nil {
 		t.Fatal(err)
 	}
 
+	// Convert the bytes buffer into a space trimmed file path string.
+	resultFile := strings.TrimSpace(mockStdOut.String())
 
 	result, err := os.ReadFile(resultFile)
 	if err != nil {
