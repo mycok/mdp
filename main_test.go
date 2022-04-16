@@ -18,7 +18,10 @@ func TestParseContent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	result := parseContent(input)
+	result, err := parseContent(input, "")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	expected, err := os.ReadFile(goldenFilePath)
 	if err != nil {
@@ -37,7 +40,7 @@ func TestRun(t *testing.T) {
 	var mockStdOut bytes.Buffer
 
 	// Call the run method and write the file path on the provided buffer.
-	if err := run(inputFilePath, &mockStdOut, true); err != nil {
+	if err := run(inputFilePath, "", true, &mockStdOut); err != nil {
 		t.Fatal(err)
 	}
 
